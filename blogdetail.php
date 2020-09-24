@@ -16,10 +16,15 @@ $stmtcmt = $pdo->prepare("SELECT * FROM comments WHERE post_id=$blogId");
 $stmtcmt->execute();
 $cmResult = $stmtcmt->fetchAll();
 
-$authorId = $cmResult[0]['author_id'];
-$stmtau = $pdo->prepare("SELECT * FROM users WHERE id=$authorId");
-$stmtau->execute();
-$auResult = $stmtau->fetchAll();
+$auResult = [];
+if($cmResult) {
+  foreach ($cmResult as $key => $value) {
+    $authorId = $cmResult[$key]['author_id'];
+    $stmtau = $pdo->prepare("SELECT * FROM users WHERE id=$authorId");
+    $stmtau->execute();
+    $auResult[] = $stmtau->fetchAll();
+  }
+}
 
 
 if($_POST) {
@@ -87,13 +92,24 @@ if($_POST) {
               <!-- /.card-body -->
               <div class="card-footer card-comments">
                 <div class="card-comment">
-                  <div class="comment-text" style="margin-left: 0px !important;">
-                    <span class="username">
-                      <?= $auResult[0]['name'] ?>
-                      <span class="text-muted float-right"><?= $cmResult[0]['created_at'] ?></span>
-                    </span><!-- /.username -->
-                    <?= $cmResult[0]['content'] ?>
-                  </div>
+                  <?php
+                    if($cmResult) { ?>
+                      <div class="comment-text" style="margin-left: 0px !important;">
+                        <?php
+                          foreach ($cmResult as $key => $value) { ?>
+                           <span class="username">
+                            <?= $auResult[$key][0]['name'] ?>
+                            <span class="text-muted float-right"><?= $cmResult[0]['created_at'] ?></span>
+                          </span><!-- /.username -->
+                          <?= $value['content'] ?><br> 
+
+                        <?php    
+                          }
+                        ?>
+                      </div>
+                  <?php
+                    }
+                  ?>
                   <!-- /.comment-text -->
                 </div>
                 <!-- /.card-comment -->

@@ -11,6 +11,7 @@ if (empty($_SESSION['user_id']) && empty($_SESSION['logged_in'])) {
 if ($_POST) {
     $email = $_POST['email'];
     $name = $_POST['name'];
+    $password = $_POST['password'];
     if(empty($_POST['role'])) {
       $role = 0;
     } else {
@@ -25,9 +26,9 @@ if ($_POST) {
     if ($user) {
       echo "<script>alert('Email duplicated')</script>";
     } else {
-      $stmt = $pdo->prepare("INSERT INTO users(name,email,role) VALUES (:name,:email,:role)");
+      $stmt = $pdo->prepare("INSERT INTO users(name,email,role,password) VALUES (:name,:email,:role,:password)");
       $result = $stmt->execute(
-        array(':name'=>$name,':email'=>$email,':role'=>$role)
+        array(':name'=>$name,':email'=>$email,':role'=>$role,':password'=>$password)
       );
       if ($result) {
         echo "<script>alert('Successfully Added');window.location.href='user_list.php';</script>";
@@ -57,6 +58,14 @@ if ($_POST) {
                 <div class="form-group">
                   <label>Email</label>
                   <input type="email" class="form-control" name="email" value="" required>
+                </div>
+                <div class="input-group mb-3">
+                  <input type="password" class="form-control" placeholder="Password" name="password">
+                  <div class="input-group-append">
+                    <div class="input-group-text">
+                      <span class="fas fa-lock"></span>
+                    </div>
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="vehicle3">Admin</label>
