@@ -7,7 +7,18 @@ include 'header.php';
 if (!$_SESSION['user_id'] && !$_SESSION['logged_in']) {
   header('Location: login.php');
 }
+if ($_SESSION['role'] != 1) {
+  header('Location: login.php');
+}
 
+if (!empty($_POST['search'])) {
+  setcookie('search', $_POST['search'], time() + (86400 * 30), "/");
+} else {
+  if(empty($_GET['pageno'])) {
+    unset($_COOKIE['search']);
+    setcookie('search', null, -1, "/");
+  }
+}
 ?>
 
 
@@ -29,10 +40,10 @@ if (!$_SESSION['user_id'] && !$_SESSION['logged_in']) {
                 }else {
                   $pageno = 1;
                 }
-                $numOfrecs = 5;
+                $numOfrecs = 4;
                 $offset = ($pageno - 1) * $numOfrecs; 
 
-                if(empty($_POST['search'])) {
+                if(empty($_POST['search']) && empty($_COOKIE['search'])) {
                   $stmt = $pdo->prepare("SELECT * FROM users ORDER BY id DESC");
                   $stmt->execute();
                   $rawResults = $stmt->fetchAll();
@@ -42,14 +53,14 @@ if (!$_SESSION['user_id'] && !$_SESSION['logged_in']) {
                   $stmt->execute();
                   $results = $stmt->fetchAll();
                 } else {
-                  $searchKey = $_POST['search'];
-                  $stmt = $pdo->prepare("SELECT * FROM users WHERE title LIKE '%$searchKey%' ");
+                  $searchKey = !empty($_POST['search']) ? $_POST['search'] : $_COOKIE['search'];
+                  $stmt = $pdo->prepare("SELECT * FROM users WHERE name LIKE '%$searchKey%' ");
                   // print_r($stmt);exit(); 
                   $stmt->execute();
                   $rawResults = $stmt->fetchAll();
                   $total_pages = ceil(count($rawResults) / $numOfrecs);
 
-                  $stmt = $pdo->prepare("SELECT * FROM users WHERE title LIKE '%$searchKey%' ORDER BY id DESC LIMIT $offset,$numOfrecs ");
+                  $stmt = $pdo->prepare("SELECT * FROM users WHERE name LIKE '%$searchKey%' ORDER BY id DESC LIMIT $offset,$numOfrecs ");
                   $stmt->execute();
                   $results = $stmt->fetchAll();
                 }
