@@ -1,3 +1,15 @@
+<?php
+
+session_start();
+require 'config/config.php';
+
+
+if (!$_SESSION['user_id'] && !$_SESSION['logged_in']) {
+  header('Location: login.php');
+}
+
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,79 +40,80 @@
         <h1 class="text-center">Blog Sites</h1>
       </div><!-- /.container-fluid -->
     </section>
+    <?php
+    if (!empty($_GET['pageno'])){
+      $pageno = $_GET['pageno'];
+    }else {
+      $pageno = 1;
+    }
+    $numOfrecs = 6;
+    $offset = ($pageno - 1) * $numOfrecs; 
 
+    if(empty($_POST['search'])) {
+      $stmt = $pdo->prepare("SELECT * FROM posts ORDER BY id DESC");
+      $stmt->execute();
+      $rawResults = $stmt->fetchAll();
+      $total_pages = ceil(count($rawResults) / $numOfrecs);
+
+      $stmt = $pdo->prepare("SELECT * FROM posts ORDER BY id DESC LIMIT $offset,$numOfrecs ");
+      $stmt->execute();
+      $results = $stmt->fetchAll();
+    }
+    ?>
     <div class="row">
+      <?php 
+      if ($results) {
+        $i = 1;
+        foreach ($results as $result) { ?>
           <div class="col-md-4">
             <!-- Box Comment -->
             <div class="card card-widget">
               <div class="card-header">
                 <div style="text-align:center !important;float: none;" class="card-title">
-                  <h4>Blog Title</h4>
+                  <h4><?= $result['title'] ?></h4>
                 </div>
                 <!-- /.user-block -->
-                
+
               </div>
               <!-- /.card-header -->
               <div class="card-body">
-                <img class="img-fluid pad" src="dist/img/photo2.png" alt="Photo">
-
-                <p>I took this photo this morning. What do you guys think?</p>
-                <!-- <span class="float-right text-muted">127 likes - 3 comments</span> -->
+                <a href="blogdetail.php?id=<?= $result['id']; ?>">
+                  <img class="img-fluid pad"  src="admin/images/<?= $result['image']?>" style="width: 100%;height: 300px;">
+                </a>
               </div>
               <!-- /.card-body -->
-              
-             
+
+
             </div>
             <!-- /.card -->
           </div>
-          <!-- /.col -->
-          <div class="col-md-4">
-            <!-- Box Comment -->
-            <div class="card card-widget">
-              <div class="card-header">
-                <div style="text-align:center !important;float: none;" class="card-title">
-                  <h4>Blog Title</h4>
-                </div>
-                <!-- /.user-block -->
-                
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body">
-                <img class="img-fluid pad" src="dist/img/photo2.png" alt="Photo">
+           <?php  
+         }
+       }
+       ?> 
+      
+    </div>
 
-                <p>I took this photo this morning. What do you guys think?</p>
-                <!-- <span class="float-right text-muted">127 likes - 3 comments</span> -->
-              </div>
-              <!-- /.card-body -->
-              
-             
-            </div>
-            <!-- /.card -->
-          </div>
-          <div class="col-md-4">
-            <!-- Box Comment -->
-            <div class="card card-widget">
-              <div class="card-header">
-                <div style="text-align:center !important;float: none;" class="card-title">
-                  <h4>Blog Title</h4>
-                </div>
-                <!-- /.user-block -->
-                
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body">
-                <img class="img-fluid pad" src="dist/img/photo2.png" alt="Photo">
+    <div class="row" style="float: right;margin-right: 0px;">
+      <nav aria-label="...">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="?pageno=1" tabindex="-1">First</a>
+          </li>
+          <li class="page-item <?php if($pageno <= 1){ echo 'disabled';} ?>">
+            <a class="page-link" href="<?php if($pageno <= 1){ echo '#';}else{ echo "?pageno=".($pageno-1);} ?>">Previous</a>
+          </li>
+          <li class="page-item <?php if($pageno >= $total_pages){ echo 'disabled';} ?>">
+            <a class="page-link" href="#"><?php echo $pageno; ?> <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="page-item <?php if($pageno >= $total_pages){ echo 'disabled';} ?>"><a class="page-link" href="<?php if($pageno >= $total_pages){ echo '#';}else{ echo "?pageno=".($pageno+1);} ?>">Next</a></li>
+          <li class="page-item">
+            <a class="page-link" href="?pageno=<?php echo $total_pages?>">Last</a>
+          </li>
+        </ul>
+      </nav>
+    </div><br><br>
 
-                <p>I took this photo this morning. What do you guys think?</p>
-                <!-- <span class="float-right text-muted">127 likes - 3 comments</span> -->
-              </div>
-              <!-- /.card-body -->
-              
-             
-            </div>
-            <!-- /.card -->
-          </div>
-        </div>
 
     <a id="back-to-top" href="#" class="btn btn-primary back-to-top" role="button" aria-label="Scroll to top">
       <i class="fas fa-chevron-up"></i>

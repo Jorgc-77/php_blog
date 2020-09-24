@@ -20,7 +20,7 @@ if (!$_SESSION['user_id'] && !$_SESSION['logged_in']) {
           <div class="col-md-12">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Blog Lists</h3>
+                <h3 class="card-title">User Lists</h3>
               </div>
 
               <?php
@@ -29,27 +29,27 @@ if (!$_SESSION['user_id'] && !$_SESSION['logged_in']) {
                 }else {
                   $pageno = 1;
                 }
-                $numOfrecs = 4;
+                $numOfrecs = 5;
                 $offset = ($pageno - 1) * $numOfrecs; 
 
                 if(empty($_POST['search'])) {
-                  $stmt = $pdo->prepare("SELECT * FROM posts ORDER BY id DESC");
+                  $stmt = $pdo->prepare("SELECT * FROM users ORDER BY id DESC");
                   $stmt->execute();
                   $rawResults = $stmt->fetchAll();
                   $total_pages = ceil(count($rawResults) / $numOfrecs);
 
-                  $stmt = $pdo->prepare("SELECT * FROM posts ORDER BY id DESC LIMIT $offset,$numOfrecs ");
+                  $stmt = $pdo->prepare("SELECT * FROM users ORDER BY id DESC LIMIT $offset,$numOfrecs ");
                   $stmt->execute();
                   $results = $stmt->fetchAll();
                 } else {
                   $searchKey = $_POST['search'];
-                  $stmt = $pdo->prepare("SELECT * FROM posts WHERE title LIKE '%$searchKey%' ");
+                  $stmt = $pdo->prepare("SELECT * FROM users WHERE title LIKE '%$searchKey%' ");
                   // print_r($stmt);exit(); 
                   $stmt->execute();
                   $rawResults = $stmt->fetchAll();
                   $total_pages = ceil(count($rawResults) / $numOfrecs);
 
-                  $stmt = $pdo->prepare("SELECT * FROM posts WHERE title LIKE '%$searchKey%' ORDER BY id DESC LIMIT $offset,$numOfrecs ");
+                  $stmt = $pdo->prepare("SELECT * FROM users WHERE title LIKE '%$searchKey%' ORDER BY id DESC LIMIT $offset,$numOfrecs ");
                   $stmt->execute();
                   $results = $stmt->fetchAll();
                 }
@@ -57,40 +57,46 @@ if (!$_SESSION['user_id'] && !$_SESSION['logged_in']) {
               <!-- /.card-header -->
               <div class="card-body">
                 <div >
-                  <a href="add.php" type="button" class="btn btn-success">New Blog Post</a>
+                  <a href="user_add.php" type="button" class="btn btn-success">Create User</a>
                 </div><br>
 
                 <table class="table table-bordered">
                   <thead>                  
                     <tr>
                       <th style="width: 10px">#</th>
-                      <th>Title</th>
-                      <th>Content</th>
-                      <th>Images</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
                       <th style="width: 40px">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     <?php 
                       if ($results) {
+
                         $i = 1;
                         foreach ($results as $result) { ?>
                       <tr>
                       <td><?= $i++; ?></td>
-                      <td><?=  $result['title'] ?></td>
+                      <td><?=  $result['name'] ?></td>
+                      <td><?=  $result['email'] ?></td>
                       <td>
-                        <?= substr($result['content'], 0,50) ?>
+                      <?php
+                        if($result['role'] == 0) {
+                          echo "user";
+                        } else {
+                          echo "admin";
+                        }
+                      ?>
                       </td>
-                      <td>
-                        <img src="images/<?= $result['image'] ?>" width="150" height="130" >
-                      </td>
+                      
                       <td>
                         <div class="btn-group">
                           <div class="container">
-                            <a href="edit.php?id=<?= $result['id'] ?>" type="button" class="btn btn-warning">Edit</a>
+                            <a href="user_edit.php?id=<?= $result['id'] ?>" type="button" class="btn btn-warning">Edit</a>
                           </div>
                           <div class="container">
-                            <a href="delete.php?id=<?= $result['id'] ?>"
+                            <a href="user_delete.php?id=<?= $result['id'] ?>"
                                onclick="return confirm('Are you sure you want to delete this item?');"
                              type="button" class="btn btn-danger">Delete</a>
                           </div>
